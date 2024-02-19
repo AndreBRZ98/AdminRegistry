@@ -37,7 +37,6 @@ public class NinoDTO extends PersonaDTO{
 		super.setCorreo(nino.getCorreo());
 		super.setDireccion(nino.getDireccion());
 		super.setEstado(nino.getEstado());
-		super.setFamilia(nino.getFamilia());
 		super.setFechaNacimiento(nino.getFechaNacimiento());
 		super.setGenero(nino.getGenero());
 		super.setNombre(nino.getNombre());
@@ -58,7 +57,6 @@ public class NinoDTO extends PersonaDTO{
 		nino.setCorreo(super.getCorreo());
 		nino.setDireccion(super.getDireccion());
 		nino.setEstado(super.getEstado());
-		nino.setFamilia(super.getFamilia());
 		nino.setFechaNacimiento(super.getFechaNacimiento());
 		nino.setGenero(super.getGenero());
 		nino.setNombre(super.getNombre());

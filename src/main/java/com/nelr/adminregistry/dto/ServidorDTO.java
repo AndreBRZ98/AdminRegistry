@@ -36,7 +36,6 @@ public class ServidorDTO extends PersonaDTO{
 		super.setCorreo(servidor.getCorreo());
 		super.setDireccion(servidor.getDireccion());
 		super.setEstado(servidor.getEstado());
-		super.setFamilia(servidor.getFamilia());
 		super.setFechaNacimiento(servidor.getFechaNacimiento());
 		super.setGenero(servidor.getGenero());
 		super.setNombre(servidor.getNombre());
@@ -59,7 +58,6 @@ public class ServidorDTO extends PersonaDTO{
 		servidor.setCorreo(super.getCorreo());
 		servidor.setDireccion(super.getDireccion());
 		servidor.setEstado(super.getEstado());
-		servidor.setFamilia(super.getFamilia());
 		servidor.setFechaNacimiento(super.getFechaNacimiento());
 		servidor.setGenero(super.getGenero());
 		servidor.setNombre(super.getNombre());

@@ -2,7 +2,7 @@ DROP SCHEMA IF EXISTS gelr_db;
 CREATE SCHEMA gelr_db;
 USE gelr_db;
 
-create table gelr_persona (
+CREATE TABLE gelr_persona (
     id VARCHAR(20),
     nombre VARCHAR(100)  NOT NULL,
     apellidos VARCHAR(100)  NOT NULL,
@@ -14,28 +14,27 @@ create table gelr_persona (
     direccion VARCHAR(250),
     ciudad VARCHAR(100),
     estado VARCHAR(100),
-    familia JSON,
    CONSTRAINT gelr_id_pk PRIMARY KEY (id)
 );
 
 
-create table nelr_nino(
+CREATE TABLE nelr_nino(
     id VARCHAR(20),
     persona_id VARCHAR(20) NOT NULL,
     alergias TEXT,
     notas TEXT,
     CONSTRAINT nelr_id_pk PRIMARY KEY (id),
-    CONSTRAINT nelr_persona_id_pk FOREIGN KEY(persona_id) REFERENCES gelr_persona(id)
+    CONSTRAINT nelr_persona_id_fk FOREIGN KEY(persona_id) REFERENCES gelr_persona(id)
 );
 
-create table gelr_servidor(
+CREATE TABLE gelr_servidor(
     id VARCHAR(20),
     persona_id VARCHAR(20) NOT NULL,
     nivel_ibc VARCHAR(25),
     bautizo TINYINT(1),
     notas TEXT,
     CONSTRAINT gelr_id_pk PRIMARY KEY(id),
-    CONSTRAINT gelr_persona_id_pk FOREIGN KEY (persona_id) REFERENCES gelr_persona(id)
+    CONSTRAINT gelr_persona_id_fk FOREIGN KEY (persona_id) REFERENCES gelr_persona(id)
 );
 
 
@@ -46,8 +45,13 @@ CREATE TABLE gelr_login(
     contrasena VARCHAR(100),
     rol_id VARCHAR(20) NOT NULL,
     CONSTRAINT gelr_login_pk PRIMARY KEY(id),
-    CONSTRAINT gelr_login_persona_id_pk FOREIGN KEY (persona_id) REFERENCES gelr_persona(id)
+    CONSTRAINT gelr_login_persona_id_fk FOREIGN KEY (persona_id) REFERENCES gelr_persona(id)
 );
 
-INSERT INTO gelr_persona VALUES(1001,'Lucas Leon', 'Espinoza Alvarez', 'M', '2020-08-23','','','','','','','{}');
-INSERT INTO nelr_nino VALUES(5001,1001,'Nueces y pozole', 'Revisar que tenga agua en su termo');
+CREATE TABLE gelr_familia (
+    persona_id VARCHAR(20) NOT NULL,
+    parentesco ENUM('PADRE_MADRE','HIJO_HIJA', 'TUTOR_TUTORA') NOT NULL,
+    familia_id VARCHAR(20) NOT NULL,
+    CONSTRAINT gelr_familia_pk PRIMARY KEY (persona_id, familia_id),
+    CONSTRAINT gelr_familia_id_fk FOREIGN KEY (persona_id) REFERENCES gelr_persona(id)
+);

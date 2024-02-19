@@ -13,6 +13,6 @@ import java.util.Optional;
 public interface PersonaRepository extends CrudRepository<Persona, String> {
     public Optional<Persona> findByCorreo (String correo);
 
-    @Query("SELECT n FROM Persona n WHERE FUNCTION('JSON_EXTRACT', n.familia, '$.padreId') = :personaId")
-    public  Iterable<Persona> findByFamiliaJSON(@Param("personaId") String personaId);
+  /*  @Query("SELECT n FROM Persona n WHERE FUNCTION('JSON_EXTRACT', n.familia, '$.padreId') = :personaId")
+    public  Iterable<Persona> findByFamiliaJSON(@Param("personaId") String personaId); */
 }

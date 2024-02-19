@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.nelr.adminregistry.entity.*;
+import com.nelr.adminregistry.repository.FamiliaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,8 +14,6 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nelr.adminregistry.dto.FamiliaDTO;
 import com.nelr.adminregistry.dto.NinoDTO;
-import com.nelr.adminregistry.entity.Nino;
-import com.nelr.adminregistry.entity.Persona;
 import com.nelr.adminregistry.exception.NinoException;
 import com.nelr.adminregistry.jwt.JwtService;
 import com.nelr.adminregistry.repository.NinoRepository;
@@ -31,41 +31,23 @@ public class NinoServiceImpl implements NinoService {
 	@Autowired
 	PersonaRepository personaRepository;
 	@Autowired
+	FamiliaRepository familiaRepository;
+	@Autowired
 	ObjectMapper objectMapper;
 
-	
-	
-
-
-	@Override
-	public List<NinoDTO> getAllNinos() throws NinoException {
-		/*Iterable<Nino> ninosIterable = ninoRepository.findAll();
-		List<NinoDTO> ninoDTOs = new ArrayList<>();
-		
-		ninosIterable.forEach(nino -> {
-			NinoDTO ninoDTO = new NinoDTO();
-			ninoDTO.createNinoDTO(nino);
-			ninoDTOs.add(ninoDTO);
-		});
-		if(ninoDTOs.isEmpty()) {
-			throw new NinoException("No se encontraron ninos en la base de datos");
-		}
-		return ninoDTOs;*/
-		
-			// coreo del usurario logeado
-            //String correo =  authInformation.getName();
-       
-  
-		return null;
-	}
 
 	@Override
 	public String addNino(NinoDTO ninoDTO) throws NinoException, Exception {
-		//Busca el ID del padre
+		//Traemos la entidad de persona y familia correspondiente al PADRE_MADRE
+		//Utilizamos la informacion del SecurityContextHolder para conocer el correo del PADRE_MADRE
 		Authentication authInformation = SecurityContextHolder.getContext().getAuthentication();
-		Optional<Persona> personaPadreOptional = personaRepository.findByCorreo(authInformation.getName());
-		Persona personaPadre = personaPadreOptional.orElseThrow(() -> new NinoException("Algo salio mal"));
-		//Revisa si el nino ya existe
+		Optional<Persona> personaPadreMadreOptional = personaRepository.findByCorreo(authInformation.getName());
+
+		Persona personaPadreMadre = personaPadreMadreOptional.orElseThrow(() -> new NinoException("Algo salio mal"));
+		Optional<Familia> familiaOptional = familiaRepository.findByPersona(personaPadreMadre);
+		Familia familia = familiaOptional.orElseThrow(() -> new NinoException("Algo salio mal"));
+
+		//Revisa si el nino ya existe, MEJORAR ESTA VALIDACION
 		if(ninoRepository.findByNombreAndFechaNacimiento(ninoDTO.getNombre(), ninoDTO.getFechaNacimiento()).isPresent()) {
 			throw new NinoException(ninoDTO.getNombre()+" ya existe en el sistema.");
 		}
@@ -73,47 +55,48 @@ public class NinoServiceImpl implements NinoService {
 		Nino ninoEntity = ninoDTO.createNinoEntity();
 		ninoEntity.setPersonaId(KeyGenerator.getPassword());
 		ninoEntity.setId(KeyGenerator.getPassword());
-		//Se obtiene familia JSON del padre
-		String familiaJSON = personaPadre.getFamilia();
-		//Se convierte JSON a objeto JAVA y se agrega el nuevo hijo
-		FamiliaDTO familia = objectMapper.readValue(familiaJSON, FamiliaDTO.class);
-		List<String> hijos = familia.getHijos();
-		hijos.add(ninoEntity.getId());
-		familia.setHijos(hijos);
-		//Se convierte el ojeto JAVA a JSON nuevamente
-		familiaJSON=objectMapper.writeValueAsString(familia);
-		//Se traen todos los miembros de la familia para actualizar el familiaJSON
-		Iterable<Persona> personasFamilia = personaRepository.findByFamiliaJSON(personaPadre.getPersonaId());
-		String finalFamiliaJSON = familiaJSON;
-		personasFamilia.forEach(persona -> {
-			persona.setFamilia(finalFamiliaJSON);
-		});
-		//Se guarda el familia JSON en la entidad del nuevo nino
-		ninoEntity.setFamilia(finalFamiliaJSON);
-		//Se guarda la entidad del nino
-		String ninoId = ninoRepository.save(ninoEntity).getId();
 
-		return ninoDTO.getNombre() + "se agrego correctamente";
+		//Se crea el registro que corresponde al nino en la familia
+		Familia familiaNino = new Familia();
+		familiaNino.setFamiliaId(new FamiliaId(ninoEntity.getPersonaId(), familia.getFamiliaId().getFamiliaId()));
+		familiaNino.setPersona(ninoEntity);
+		familiaNino.setParentesco(Parentesco.HIJO_HIJA);
+
+		//Se guarda la entidad del nino y el nuevo registro en la tabla familia
+		String ninoNombre = ninoRepository.save(ninoEntity).getNombre();
+		familiaRepository.save(familiaNino);
+
+		return ninoNombre + " se agrego correctamente";
 	}
 
 	@Override
 	public List<NinoDTO> getNinosByPersona() throws NinoException {
-		//Busca el ID del padre
+
 		Authentication authInformation = SecurityContextHolder.getContext().getAuthentication();
 		Optional<Persona> personaPadreOptional = personaRepository.findByCorreo(authInformation.getName());
 		Persona personaPadre = personaPadreOptional.orElseThrow(() -> new NinoException("Algo salio mal"));
 
-		Iterable<Nino> ninoIterable = ninoRepository.getNinosByPersona(personaPadre.getPersonaId());
-		List<NinoDTO> ninoDTOs = new ArrayList<>();
-		ninoIterable.forEach(nino -> {
-			NinoDTO ninoDTO = new NinoDTO();
-			ninoDTO.createNinoDTO(nino);
-			ninoDTOs.add(ninoDTO);
+		// Buscamos el registro de familia del PADRE_MADRE
+		Optional<Familia> familiaPadreOptional = familiaRepository.findByPersona(personaPadre);
+		Familia familiaPadre = familiaPadreOptional.orElseThrow(() -> new NinoException("Algo salio mal"));
+
+		//Traemos a los hijos
+		Iterable<Persona> hijosIterable = familiaRepository.findHijos(familiaPadre.getFamiliaId().getFamiliaId());
+		List<NinoDTO> hijosDTOs = new ArrayList<>();
+		hijosIterable.forEach(personaHijo -> {
+			//Buscamos el objeto nino a segun su personaId
+			Optional<Nino> personaHijoNinoOptional =  ninoRepository.findByPersona(personaHijo.getPersonaId());
+			Nino personaHijoNino = personaHijoNinoOptional.orElseThrow();
+			NinoDTO hijoDTO = new NinoDTO();
+			hijoDTO.createNinoDTO(personaHijoNino);
+			hijosDTOs.add(hijoDTO);
 		});
-		if(ninoDTOs.isEmpty()) {
+
+		if(hijosDTOs.isEmpty()) {
 			throw new NinoException("Aun no has agregado a tus niños");
 		}
-		return ninoDTOs;
+
+		return hijosDTOs;
 	}
 
 }

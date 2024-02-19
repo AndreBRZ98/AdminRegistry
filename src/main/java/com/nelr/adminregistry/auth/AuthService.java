@@ -3,6 +3,8 @@ package com.nelr.adminregistry.auth;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.nelr.adminregistry.entity.*;
+import com.nelr.adminregistry.repository.FamiliaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,8 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.nelr.adminregistry.dto.FamiliaDTO;
-import com.nelr.adminregistry.entity.Login;
-import com.nelr.adminregistry.entity.Persona;
 import com.nelr.adminregistry.jwt.JwtService;
 import com.nelr.adminregistry.repository.LoginRepository;
 import com.nelr.adminregistry.utility.KeyGenerator;
@@ -27,6 +27,8 @@ public class AuthService {
 	
 	@Autowired
 	private LoginRepository loginRepository;
+	@Autowired
+	private FamiliaRepository familiaRepository;
 	@Autowired
 	private JwtService jwtService;
 	@Autowired
@@ -53,6 +55,7 @@ public class AuthService {
 	public AuthResponse register(RegisterRequest request) {
 		
 		Login loginEntity = new Login();
+		Familia familiaEntity = new Familia();
 		Persona personaEntity = new Persona();
 		
 		personaEntity.setPersonaId(KeyGenerator.getPassword());
@@ -66,22 +69,11 @@ public class AuthService {
 		personaEntity.setDireccion(request.getDireccion());
 		personaEntity.setCiudad(request.getCiudad());
 		personaEntity.setEstado(request.getEstado());
-		FamiliaDTO familiaDTO = new FamiliaDTO();
-		List<String> ninos = new ArrayList<>();
-		if(personaEntity.getGenero().name().equals("M")){
-			familiaDTO.setPadreId(personaEntity.getPersonaId());
-			familiaDTO.setMadreId("");
-		}
-		else if (personaEntity.getGenero().name().equals("F")){
-			familiaDTO.setPadreId("");
-			familiaDTO.setMadreId(personaEntity.getPersonaId());
-		}
-		familiaDTO.setTutor1Id("");
-		familiaDTO.setTutor2Id("");
-		familiaDTO.setHijos(ninos);
-		Gson gson = new Gson();
-		String familia = gson.toJson(familiaDTO);
-		personaEntity.setFamilia(familia);
+
+		familiaEntity.setParentesco(Parentesco.PADRE_MADRE);
+		familiaEntity.setFamiliaId(new FamiliaId(personaEntity.getPersonaId(), KeyGenerator.getPassword()));
+		familiaEntity.setPersona(personaEntity);
+
 		loginEntity.setLoginId(KeyGenerator.getPassword());
 		loginEntity.setPersona(personaEntity);
 		loginEntity.setUsername(request.getCorreo());
@@ -89,6 +81,8 @@ public class AuthService {
 		loginEntity.setRolId(request.getRolId());
 		
 		loginRepository.save(loginEntity);
+		familiaRepository.save(familiaEntity);
+
 		
 		AuthResponse authResponse = new AuthResponse();
 		authResponse.setToken(jwtService.getToken(loginEntity));

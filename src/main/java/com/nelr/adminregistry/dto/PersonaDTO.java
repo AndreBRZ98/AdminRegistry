@@ -19,7 +19,6 @@ public class PersonaDTO {
 	private String direccion;
 	private String ciudad;
 	private String estado;
-	private String familia;
 	
 	public String getPersonaId() {
 		return personaId;
@@ -87,12 +86,6 @@ public class PersonaDTO {
 	public void setEstado(String estado) {
 		this.estado = estado;
 	}
-	public String getFamilia() {
-		return familia;
-	}
-	public void setFamilia(String familia) {
-		this.familia = familia;
-	}
 
 	
 	
@@ -104,7 +97,6 @@ public class PersonaDTO {
 		this.correo=persona.getCorreo();
 		this.direccion=persona.getDireccion();
 		this.estado=persona.getEstado();
-		this.familia=persona.getFamilia();
 		this.fechaNacimiento=persona.getFechaNacimiento();
 		this.genero=persona.getGenero();
 		this.personaId=persona.getPersonaId();
@@ -120,7 +112,6 @@ public class PersonaDTO {
 		persona.setCorreo(this.correo);
 		persona.setDireccion(this.direccion);
 		persona.setEstado(this.estado);
-		persona.setFamilia(this.familia);
 		persona.setFechaNacimiento(this.fechaNacimiento);
 		persona.setGenero(this.genero);
 		persona.setPersonaId(this.personaId);

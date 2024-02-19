@@ -31,8 +31,8 @@ public class Persona {
 	private String direccion;
 	private String ciudad;
 	private String estado;
-	@Column(columnDefinition = "JSON")
-	private String familia;
+	//@Column(columnDefinition = "JSON")
+	//private String familia;
 	
 	
 	public String getPersonaId() {
@@ -145,16 +145,6 @@ public class Persona {
 	}
 
 
-	public String getFamilia() {
-		return familia;
-	}
-
-
-	public void setFamilia(String familia) {
-		this.familia = familia;
-	}
-
-
 	@Override
 	public int hashCode() {
 		return Objects.hash(personaId);
@@ -180,7 +170,7 @@ public class Persona {
 		return "Persona [id=" + personaId + ", nombre=" + nombre + ", apellidos=" + apellidos + ", genero=" + genero
 				+ ", fechaNacimiento=" + fechaNacimiento + ", correo=" + correo + ", celular=" + celular
 				+ ", codigoPostal=" + codigoPostal + ", direccion=" + direccion + ", ciudad=" + ciudad + ", estado="
-				+ estado + ", familia=" + familia + "]";
+				+ estado + "]";
 	}
 	
 	

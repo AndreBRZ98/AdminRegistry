@@ -23,20 +23,6 @@ public class NinoController {
 
 	@Autowired
 	private NinoService ninoService;
-	
-	
-	
-	/*@GetMapping(value ="/nino")
-	public ResponseEntity<List<NinoDTO>> getNinos(){
-		try{
-			List<NinoDTO> ninoDTOs = ninoService.getAllNinos();
-			return new ResponseEntity<>(ninoDTOs, HttpStatus.OK);
-			
-		} catch (NinoException ninoException) {
-			System.out.println(ninoException.getMessage());
-			return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-		}
-	} */
 
 	@GetMapping(value ="/nino")
 	public ResponseEntity<List<NinoDTO>> getNinosByPersona() throws NinoException{

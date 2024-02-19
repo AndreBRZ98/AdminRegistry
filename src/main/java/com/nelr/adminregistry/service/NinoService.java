@@ -7,7 +7,6 @@ import com.nelr.adminregistry.exception.NinoException;
 
 public interface NinoService {
 
-	public List<NinoDTO> getAllNinos() throws NinoException;
 	public String addNino(NinoDTO ninoDTO) throws NinoException, Exception;
 	public List<NinoDTO> getNinosByPersona() throws NinoException;
 }
